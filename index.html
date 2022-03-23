@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>StarShark Monitor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <style>
+    :root {
+      --bs-blue: #0d6efd;
+      --bs-indigo: #6610f2;
+      --bs-purple: #6f42c1;
+      --bs-pink: #d63384;
+      --bs-red: #dc3545;
+      --bs-orange: #fd7e14;
+      --bs-yellow: #ffc107;
+      --bs-green: #198754;
+      --bs-teal: #20c997;
+      --bs-cyan: #0dcaf0;
+      --bs-white: #fff;
+      --bs-gray: #6c757d;
+      --bs-gray-dark: #343a40;
+      --bs-gray-100: #f8f9fa;
+      --bs-gray-200: #e9ecef;
+      --bs-gray-300: #dee2e6;
+      --bs-gray-400: #ced4da;
+      --bs-gray-500: #adb5bd;
+      --bs-gray-600: #6c757d;
+      --bs-gray-700: #495057;
+      --bs-gray-800: #343a40;
+      --bs-gray-900: #212529;
+      --bs-primary: #0d6efd;
+      --bs-secondary: #6c757d;
+      --bs-success: #198754;
+      --bs-info: #0dcaf0;
+      --bs-warning: #ffc107;
+      --bs-danger: #dc3545;
+      --bs-light: #f8f9fa;
+      --bs-dark: #212529;
+      --bs-primary-rgb: 13, 110, 253;
+      --bs-secondary-rgb: 108, 117, 125;
+      --bs-success-rgb: 25, 135, 84;
+      --bs-info-rgb: 13, 202, 240;
+      --bs-warning-rgb: 255, 193, 7;
+      --bs-danger-rgb: 220, 53, 69;
+      --bs-light-rgb: 248, 249, 250;
+      --bs-dark-rgb: 33, 37, 41;
+      --bs-white-rgb: 255, 255, 255;
+      --bs-black-rgb: 0, 0, 0;
+      --bs-body-color-rgb: 33, 37, 41;
+      --bs-body-bg-rgb: 255, 255, 255;
+      /* --bs-font-sans-serif: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
+      --bs-font-sans-serif: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
+      --bs-body-font-family: var(--bs-font-sans-serif);
+      --bs-body-font-size: 1rem;
+      --bs-body-font-weight: 400;
+      --bs-body-line-height: 1.5;
+      --bs-body-color: #fff;
+      --bs-body-bg: rgb(54, 54, 54);
+    }
+
+    .card,
+    .list-group-item {
+      background-color: var(--bs-body-bg);
+      border-color: var(--bs-body-color);
+      color: var(--bs-body-color);
+    }
+
+    #starsharklist {
+      border-top: #000 2px solid;
+    }
+
+    .spanaddr {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+      overflow: hidden;
+      display: inline-block;
+      font-size: 0.8em;
+    }
+
+    .spanremove {
+      float: right;
+      padding: 0 10px;
+      text-align: center;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+  <script>
+    $('form').submit(false);
+    const sleep = (ms) => {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    let web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed.binance.org/"))
+    let starShark = new web3.eth.Contract(
+      [{
+        "inputs": [{
+          "internalType": "string",
+          "name": "baseURI_",
+          "type": "string"
+        }, {
+          "internalType": "string",
+          "name": "name_",
+          "type": "string"
+        }, {
+          "internalType": "string",
+          "name": "symbol_",
+          "type": "string"
+        }],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "approved",
+          "type": "address"
+        }, {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }],
+        "name": "Approval",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        }, {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "approved",
+          "type": "bool"
+        }],
+        "name": "ApprovalForAll",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }],
+        "name": "OwnershipTransferred",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }],
+        "name": "Paused",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }],
+        "name": "RoleGranted",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }],
+        "name": "RoleRevoked",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }, {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_genes",
+          "type": "uint256"
+        }],
+        "name": "SharkBorned",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }, {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_oldGenes",
+          "type": "uint256"
+        }, {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_newGenes",
+          "type": "uint256"
+        }],
+        "name": "SharkEvolved",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }, {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_genes",
+          "type": "uint256"
+        }],
+        "name": "SharkRebirthed",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }],
+        "name": "SharkRetired",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": true,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        }, {
+          "indexed": true,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        }, {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }],
+        "name": "Transfer",
+        "type": "event"
+      }, {
+        "anonymous": false,
+        "inputs": [{
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }],
+        "name": "Unpaused",
+        "type": "event"
+      }, {
+        "inputs": [],
+        "name": "MINTER_ROLE",
+        "outputs": [{
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        }, {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }],
+        "name": "approve",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }],
+        "name": "balanceOf",
+        "outputs": [{
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }, {
+          "internalType": "uint256",
+          "name": "_genes",
+          "type": "uint256"
+        }, {
+          "internalType": "address",
+          "name": "_owner",
+          "type": "address"
+        }],
+        "name": "bornShark",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }, {
+          "internalType": "uint256",
+          "name": "_newGenes",
+          "type": "uint256"
+        }],
+        "name": "evolveShark",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }],
+        "name": "getApproved",
+        "outputs": [{
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }, {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }],
+        "name": "getRoleMember",
+        "outputs": [{
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }],
+        "name": "getRoleMemberCount",
+        "outputs": [{
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }],
+        "name": "getShark",
+        "outputs": [{
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }, {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }, {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }],
+        "name": "grantRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }, {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }],
+        "name": "hasRole",
+        "outputs": [{
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }, {
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        }],
+        "name": "isApprovedForAll",
+        "outputs": [{
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [],
+        "name": "name",
+        "outputs": [{
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [{
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }],
+        "name": "ownerOf",
+        "outputs": [{
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [],
+        "name": "pause",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [],
+        "name": "paused",
+        "outputs": [{
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }, {
+          "internalType": "uint256",
+          "name": "_genes",
+          "type": "uint256"
+        }],
+        "name": "rebirthShark",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }, {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }],
+        "name": "renounceRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "_sharkId",
+          "type": "uint256"
+        }],
+        "name": "retireShark",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }, {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }],
+        "name": "revokeRole",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        }, {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        }, {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }],
+        "name": "safeTransferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        }, {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        }, {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }, {
+          "internalType": "bytes",
+          "name": "_data",
+          "type": "bytes"
+        }],
+        "name": "safeTransferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "operator",
+          "type": "address"
+        }, {
+          "internalType": "bool",
+          "name": "approved",
+          "type": "bool"
+        }],
+        "name": "setApprovalForAll",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "string",
+          "name": "baseURI_",
+          "type": "string"
+        }],
+        "name": "setBaseURI",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "bytes4",
+          "name": "interfaceId",
+          "type": "bytes4"
+        }],
+        "name": "supportsInterface",
+        "outputs": [{
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [{
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }],
+        "name": "tokenByIndex",
+        "outputs": [{
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }, {
+          "internalType": "uint256",
+          "name": "index",
+          "type": "uint256"
+        }],
+        "name": "tokenOfOwnerByIndex",
+        "outputs": [{
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }],
+        "name": "tokenURI",
+        "outputs": [{
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [{
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }],
+        "stateMutability": "view",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        }, {
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        }, {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }],
+        "name": "transferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [{
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }],
+        "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }, {
+        "inputs": [],
+        "name": "unpause",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }], '0x416f1D70c1C22608814d9f36c492EfB3Ba8cad4c',
+      (err, result) => {
+        if (err) throw [new Date().toString(), 'contract starShark', err];
+      }
+    )
+    let getSharkIDs = async (address) => {
+      let amount = await starShark.methods.balanceOf(address).call(),
+        amount2done = 0
+      amount = parseInt(amount), amount2done = parseInt(amount)
+      let sharkIDs = []
+      if (amount > 0) {
+        for (let i = 0; i < amount; i++) {
+          try {
+            starShark.methods.tokenOfOwnerByIndex(address, i).call().then(sharkID => {
+              sharkIDs.push(sharkID)
+            })
+          } catch (error) {
+            console.error(error)
+            amount2done--
+          }
+        }
+      }
+      while (true) {
+        if (sharkIDs.length >= amount2done) {
+          break
+        }
+        await sleep(200)
+      }
+      return sharkIDs
+    }
+    let getSharkDetail = async (data) => {
+      let SharkIDs = await getSharkIDs(data.address)
+      console.log(SharkIDs)
+      let mySharks = []
+      for (const key in SharkIDs) {
+        setLoadAlert(`Getting account (${data.name}) shark data: ${parseInt(key)+1}/${SharkIDs.length} (${SharkIDs[key]})`)
+        let shark = await $.getJSON('https://starsharks.com/go/api/market/shark-detail?shark_id=' + SharkIDs[key])
+        if (typeof shark == 'string') {
+          shark = JSON.parse(shark)
+        }
+        shark = shark['data']['attr']
+        mySharks.push(shark)
+      }
+      return mySharks
+    }
+    let getMultiAccSharks = async () => {
+      let allAcc = {}
+      for (const key in savedAddress) {
+        setLoadAlert(`Getting account (${savedAddress[key].name}) sharkIDs`)
+        allAcc[savedAddress[key].address] = await getSharkDetail(savedAddress[key])
+      }
+      return allAcc
+    }
+
+    let savedAddress = []
+    let getSavedAddress = () => {
+      let savedAddressTmp = localStorage.getItem('savedAddress')
+      if (savedAddressTmp == null) {
+        updateSavedAddress()
+      } else {
+        savedAddress = JSON.parse(savedAddressTmp)
+      }
+    }
+    let updateSavedAddress = () => {
+      localStorage.setItem('savedAddress', JSON.stringify(savedAddress))
+    }
+    getSavedAddress()
+    let addAddress = () => {
+      let address = $('#address').val().trim()
+      let name = $('#name').val().trim()
+      if (web3.utils.isAddress(address) && savedAddress.map(d => d.address).indexOf(address) === -1) {
+        savedAddress.push({
+          address: address,
+          name: name,
+        })
+        updateSavedAddress()
+        setAddAlert('Success add account')
+        $('#address').val('')
+        $('#name').val('')
+      } else {
+        if (!web3.utils.isAddress(address)) {
+          setAddAlert('Account format wrong', false)
+        } else if (savedAddress.map(d => d.address).indexOf(address) !== -1) {
+          setAddAlert('Account exist', false)
+        }
+      }
+    }
+    let removeAddress = (address) => {
+      let target = -1
+      for (const key in savedAddress) {
+        if (savedAddress[key].address == address) {
+          target = key
+          break
+        }
+      }
+      console.log(target)
+      if (target >= 0) {
+        savedAddress.splice(target, 1)
+        updateSavedAddress()
+      }
+      $('#' + address).remove()
+    }
+    let setAddAlertTimeout
+    let setAddAlert = async (info, type) => {
+      clearTimeout(setAddAlertTimeout)
+      let target = $('#addalert')
+      target.removeClass('alert-success alert-warning')
+      if (type == undefined)
+        type = true
+      switch (type) {
+        case false:
+          target.addClass('alert-warning')
+          break
+        case true:
+          target.addClass('alert-success')
+          break
+      }
+      target.text(info)
+      target.show(500)
+      if (type == 1) {
+        setAddAlertTimeout = setTimeout(() => {
+          target.hide(500)
+        }, 5000)
+      }
+    }
+    let setLoadAlertTimeout
+    let setLoadAlert = async (info, type) => {
+      clearTimeout(setLoadAlertTimeout)
+      let target = $('#loadalert')
+      target.removeClass('alert-success alert-warning')
+      if (type == undefined)
+        type = true
+      switch (type) {
+        case false:
+          target.addClass('alert-warning')
+          break
+        case true:
+          target.addClass('alert-success')
+          break
+      }
+      target.text(info)
+      target.show(500)
+      if (type == 1) {
+        setLoadAlertTimeout = setTimeout(() => {
+          target.hide(500)
+        }, 5000)
+      }
+    }
+    let loadStarShark = () => {
+      console.log('load started')
+      getMultiAccSharks().then(accounts => {
+        console.log('loaded all account data')
+        $('#starsharklist').empty()
+        for (const key in accounts) {
+          console.log('doing account:' + key)
+          let thisAcc
+          for (const sadd of savedAddress) {
+            thisAcc = sadd
+            if (sadd.address == key)
+              break
+          }
+          genAccountBox(thisAcc, accounts[key])
+          console.log('done account:' + key)
+          setLoadAlert('Loaded StarShark')
+        }
+      })
+    }
+    let genAccountBox = (acc, account) => {
+      let main = $('<div class="col-xl-3 col-lg-4 col-md-6">'),
+        card = $('<div class="card mt-3">'),
+        cardHeader = $('<div class="card-header">'),
+        cardBody = $('<div class="card-body">'),
+        listGroup = $('<ul class="list-group">'),
+        listGroupItemText = '<li class="list-group-item">',
+        box = $('#starsharklist')
+      //sort shark
+      account.sort((a, b) => a.shark_id - b.shark_id)
+      account.sort((a, b) => b.star - a.star)
+      console.log(acc, account)
+      main.attr('id', acc.address)
+      //set header
+      cardHeader.html(`<div>${acc.name}<span class="spanremove" onclick="removeAddress('${acc.address}')">Remove</span></div><span class="spanaddr">${acc.address}</span>`)
+      //set shark list
+      for (const each of account) {
+        let listGroupItem = $(listGroupItemText)
+        let color
+        if (each.power <= Math.round((each.star * 10) / 3)) {
+          color='var(--bs-green)'
+        } else if (each.power <= Math.round((each.star * 10) / 1.5)) {
+          color='var(--bs-yellow)'
+        } else if (each.power <= Math.round((each.star * 10) / 1.1)) {
+          color='var(--bs-orange)'
+        } else {
+          color='var(--bs-red)'
+        }
+        listGroupItem.html(`<div><a href="https://starsharks.com/market/sharks/${each.shark_id}" target="_blank">#${each.shark_id}</a> - Star: ${each.star}<span style="float: right; color: ${color};">${each.power}/${each.star*10}</span></div>`)
+        listGroup.append(listGroupItem)
+      }
+      cardBody.append(listGroup)
+      card.append(cardHeader).append(cardBody)
+      main.append(card)
+      box.append(main)
+    }
+    loadStarShark()
+  </script>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <div class="row pb-3">
+      <div class="col-lg-6">
+        <div class="card mt-3">
+          <div class="card-header">
+            Monitor StarShark
+          </div>
+          <div class="card-body">
+            <form action="/">
+              <div class="d-grid gap-2">
+                <button type="button" class="btn btn-primary" onclick="loadStarShark()">Refresh StarShark</button>
+              </div>
+              <div id="loadalert" class="alert mb-0 mt-3" style="display: none;" role="alert"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card mt-3">
+          <div class="card-header">
+            Add account to Monitor
+          </div>
+          <div class="card-body">
+            <form action="/">
+              <div class="mb-3">
+                <label for="address" class="form-label">Account Address</label>
+                <input type="text" class="form-control" id="address" placeholder="">
+              </div>
+              <div class="mb-3">
+                <label for="name" class="form-label">Account Name</label>
+                <input type="text" class="form-control" id="name" placeholder="">
+              </div>
+              <div class="d-grid gap-2\">
+                <button type="button" class="btn btn-primary" onclick="addAddress()">Add Address</button>
+              </div>
+              <div id="addalert" class="alert mb-0 mt-3" style="display: none;" role="alert">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="starsharklist" class="row">
+    </div>
+  </div>
+</body>
+
+</html>
